@@ -1,0 +1,37 @@
+﻿<div class="page" data-bind="with: eventFeedback, css: eventFeedback.pageTransitionVM.activeStatusCSS">
+    <div class="row animateRow standardRow white">
+        <h2>Event Feedback</h2>
+    </div>
+        <div class="row animateRow standardRow white" data-bind="with: currentEventData">
+            <div data-bind="with: userData">
+                <div class="row standardRow">
+                    <div class="col-xs-12 colNoPad" data-bind="with: eventFeedback">
+                        <label>Refreshments</label>
+                        <input type="number" data-bind="rating: ko.getObservable($data, 'refreshments')" min=1 max=10 step=1 data-size="sm" data-rtl="false" data-show-clear="false" data-show-caption="false" />
+                    </div>
+                </div>
+                <div class="row standardRow" data-bind="">
+                    <div class="col-xs-12 colNoPad" data-bind="with: eventFeedback">
+                        <label>Venue</label>
+                        <input type="number" value="" data-bind="rating: ko.getObservable($data, 'venue')" min=1 max=10 step=1 data-size="sm" data-rtl="false" data-show-clear="false" data-show-caption="false" />
+                    </div>
+                </div>
+                <div class="row standardRow" data-bind="">
+                    <div class="col-xs-12 colNoPad" data-bind="with: eventFeedback">
+                        <label>Overall</label>
+                        <input type="number" value="" data-bind="rating: ko.getObservable($data, 'overall')" min=1 max=10 step=1 data-size="sm" data-rtl="false" data-show-clear="false" data-show-caption="false" />
+                    </div>
+                </div>
+                <hr />
+            </div>
+        </div>
+        <div class="row animateRow standardRow white" data-bind="">
+            <div data-bind="template: { name: 'comments-template', data: mostLikeComments }"></div>
+            <hr />
+            <div data-bind="template: { name: 'comments-template', data: leastLikeComments }"></div>
+            <hr />
+            <div data-bind="template: { name: 'comments-template', data: pocketDDDComments }"></div>
+            <hr />
+            <div data-bind="template: { name: 'comments-template', data: eventComments }"></div>
+        </div>
+    </div>

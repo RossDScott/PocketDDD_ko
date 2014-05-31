@@ -1,0 +1,65 @@
+﻿
+<div class="expandGroup" data-bind="with: nav, collapsableSection: nav.expandingSection">
+    <div class="row header" data-bind="">
+        <div class="col-xs-2">
+            <button type="button" class="btn btn-default btn-sm" data-bind="visible: showBack, click: backClick">
+                <span class="glyphicon glyphicon-circle-arrow-left"></span>
+            </button>
+        </div>
+        <div class="col-xs-8">
+            <h1 data-bind="css:{eventShowing: subTitle !== ''}">
+                <span class="small" data-bind="text: subTitle"></span><span class="mainTitle" data-bind="text: title"></span>
+                <span data-bind="visible: isSyncing, css: syncStatusClass" class="sync glyphicon glyphicon-cloud-upload"></span>
+                <span data-bind="visible: !isSyncing && newGameScore !== null, text: '+' + newGameScore" class=" gameScoreStatus"></span>
+            </h1>
+        </div>
+        <div class="col-xs-2">
+            <button id="headerExpandCollapseButton" type="button" class="btn btn-default btn-sm collapseTriggerBtn" data-bind="click: expandingSection.showHideExpand">
+                <span id="headerExpandCollapseIcon" class="glyphicon glyphicon-align-justify rotateIcon"></span>
+            </button>
+        </div>
+    </div>
+    <div class="row header rowButtedUp collapse collapseTarget">
+        <div class="col-xs-12 colNoPad">
+            <div class="filter">
+                <ul class="filterList">
+                    <li><button class="btn btn-default btn-sm cardBtn" data-bind="click: homeClick"><span class="glyphicon glyphicon-home"></span> Home (EventList)</button></li>
+                    <li data-bind="visible: currentPage.pageType > 1"><button class="btn btn-default btn-sm cardBtn" data-bind="click: currentEventClick"><span data-bind="text: currentEventTitle"></span></button></li>
+                    <li><button class="btn btn-default btn-sm cardBtn" data-bind="click: syncClick, disable: isSyncing"><span class="glyphicon glyphicon-transfer"></span> Sync</button></li>
+                    <li><hr /></li>
+                    <li data-bind="visible: deleteClickCount === 0">
+                        <button class="btn btn-default btn-sm cardBtn" data-bind="click: deleteAllDataClick"><span class="glyphicon glyphicon-trash"></span> Delete All Data</button>
+                    </li>
+                    <li data-bind="visible: deleteClickCount > 0">
+                        <button class="btn btn-danger btn-sm cardBtn" data-bind="click: deleteAllDataConfirmClick"><span class="glyphicon glyphicon-trash"></span> Delete</button>
+                        <button class="btn btn-primary btn-sm cardBtn" data-bind="click: deleteAllDataCancelClick"><span class="glyphicon glyphicon-ban-circle"></span> Cancel</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@*<div class="row header" data-bind="with: nav">
+        <div class="col-xs-2">
+            <button type="button" class="btn btn-default btn-sm" data-bind="visible: showBack">
+                <span class="glyphicon glyphicon-circle-arrow-left"></span>
+            </button>
+        </div>
+        <div class="col-xs-8">
+            <h1>PocketDDD</h1>
+        </div>
+        <div class="col-xs-2">
+            <button id="headerExpandCollapseButton" type="button" class="btn btn-default btn-sm">
+                <span id="headerExpandCollapseIcon" class="glyphicon glyphicon-align-justify rotateIcon"></span>
+            </button>
+        </div>
+        <div id="headerExpandSection" class="row">
+            <div class="col-xs-12">
+                sfsdfsdfsdfsfd sdfsdf sdfsdf sdfsd sdfsd sdfsd sdfsdf sdfsd sdfsd sdfsd <br />
+                sdfsd sdf sdfsdf sdfsd sdf
+            </div>
+        </div>
+    </div>*@

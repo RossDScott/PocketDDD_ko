@@ -1,0 +1,60 @@
+﻿<div class="row animateRow standardRow" data-bind="with: eventBriteRegistration, visible: eventBriteRegistration.visible">
+    <div class="col-xs-12 colNoPad" data-bind="visible: stage === -1">
+        <button type="button" data-bind="click: yesEnterClick" class="btn btn-default btn-sm pull-right cardBtn">
+            <span class="glyphicon glyphicon-log-in"></span> Register now
+        </button>
+    </div>
+    <div class="col-xs-12 colNoPad" data-bind="visible: stage !== -1">
+        <div class="card clearfix" data-bind="css: cardStatus">
+            <div data-bind="visible: stage === 0">
+                <h4 data-bind="" class="headerQuestion">Do you have an EventBrite Order no?  </h4>
+                <p class="questionInfo">
+                    You will find it in your email confirmation and on your ticket.
+                </p>
+                <p class="questionInfo">
+                    You will need this to vote / give feedback and to be entered into the prize draw.
+                </p>
+                <button type="button" data-bind="click: yesEnterClick" class="btn btn-default btn-sm pull-right">
+                    <span class="glyphicon glyphicon-ok"></span> Yes, enter now
+                </button>
+                <button type="button" data-bind="click: cancelAskClick" class="btn btn-default btn-sm pull-right">
+                    <span class="glyphicon glyphicon-remove"></span> No
+                </button>
+            </div>
+            <div data-bind="visible: stage === 1">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Eventbrite Order no:</label>
+                            <input type="number" class="form-control" data-bind="value: evenbriteOrderNo">
+                            <span class="pull-right"></span>
+                            <div class="alert alert-danger" data-bind="visible: registrationFailed">Registration failed, please try again</div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" data-bind="click: submitNumberClick" class="btn btn-default btn-sm pull-right">
+                    <span class="glyphicon glyphicon-log-in"></span> Register
+                </button>
+                <button type="button" data-bind="click: cancelAskClick" class="btn btn-default btn-sm pull-right">
+                    <span class="glyphicon glyphicon-remove"></span> Cancel
+                </button>
+            </div>
+            <div data-bind="visible: stage === 2">
+                <h4 data-bind="" class="headerQuestion">Checking...</h4>
+                <button type="button" data-bind="click: closeClick" class="btn btn-default btn-sm closeBtn">
+                    <span class="glyphicon glyphicon-remove"></span> Cancel
+                </button>
+            </div>
+            <div data-bind="visible: stage === 3">
+                <h4 data-bind="" class="headerQuestion">Thanks <span data-bind="text: welcomeName"></span></h4>
+                <p class="questionInfo nudgeDown">
+                    Your Event Score will now be updated each time you check-in, rate or give feedback for a session.
+                </p>
+                <button type="button" data-bind="click: closeClick" class="btn btn-default btn-sm closeBtn">
+                    <span class="glyphicon glyphicon-remove"></span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

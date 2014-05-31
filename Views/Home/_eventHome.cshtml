@@ -1,0 +1,62 @@
+﻿<div class="page" data-bind="with: eventHome, css: eventHome.pageTransitionVM.activeStatusCSS">
+    <div class="row animateRow standardRow">
+        <div class="col-xs-12 colNoPad">
+            <div class="card" data-bind="">
+                <div class="row standardRow">
+                    <div class="col-xs-2 colNoPad text-muted">
+                        When?
+                    </div>
+                    <div class="col-xs-10 colNoPad infoPadding">
+                        17th May 2014
+                    </div>
+                </div>
+                <div class="row standardRow">
+                    <div class="col-xs-2 colNoPad text-muted">
+                        Where?
+                    </div>
+                    <div class="col-xs-10 colNoPad infoPadding">
+                        <address>
+                            Redcliff 6th College<br />
+                            Dulverton House<br />
+                            Redcliff Hill<br />
+                            Bristol<br />
+                            BS1 6RB
+                        </address>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row animateRow standardRow">
+        <div class="col-xs-4 colNoPad">
+            <button class="btn btn-default btn-sm cardBtn" data-bind="click: viewSessionsClick"><span class="glyphicon glyphicon-list-alt"></span> Sessions</button>
+        </div>
+        <div class="col-xs-4 colNoPad">
+            <button class="btn btn-default btn-sm cardBtn" data-bind="click: viewMyDayClick"><span class="glyphicon glyphicon-user"></span> My Day</button>
+        </div>
+        <div class="col-xs-4 colNoPad">
+            <button class="btn btn-default btn-sm cardBtn" data-bind="click: viewFeedbackClick"><span class="glyphicon glyphicon-star"></span> Feedback</button>
+        </div>
+    </div>
+    @Html.Partial("_eventbriteRegistration")
+    <div class="row animateRow standardRow" data-bind="with: currentEventData, visible: isRegistered">
+        <div class="col-xs-12 colNoPad">
+            <div class="card thin gameScore" data-bind="click: $parent.eventScoreClick">
+                <h2>Event Score:<span data-bind="text: userData.eventScore"></span></h2>
+            </div>
+        </div>
+    </div>
+    <div class="row animateRow standardRow" data-bind="with: currentEventData">
+        <div class="col-xs-12 colNoPad" data-bind="visible: userData.eventFeedback.easterEggP || userData.eventFeedback.easterEggRR">
+            <div class="card" style="background-color:gold">
+                <h2 data-bind="with:userData.userRegistration"><span data-bind="text: firstName"></span> has unlocked</h2>
+                <div data-bind="visible: userData.eventFeedback.easterEggP">
+                    <span class="">Perseverance + 3</span>
+                </div>
+                <div data-bind="visible: userData.eventFeedback.easterEggRR">
+                    <span class="">Russian Roulette + 5</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

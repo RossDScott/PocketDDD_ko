@@ -1,0 +1,37 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <title>Pocket DDD - Speaker</title>
+
+    @Html.OfflineStyleRender(Request, "~/Content/bootstrap")
+    @Html.OfflineStyleRender(Request, "~/Content/css")
+</head>
+<body>
+    <div class="container">
+        <div class="pageContainer" data-bind="">
+
+
+        </div>
+    </div>
+
+    <script></script>
+
+    @Html.OfflineScriptRender(Request, "~/bundles/jquery")
+    @Html.OfflineScriptRender(Request, "~/bundles/bootstrap")
+    @Html.OfflineScriptRender(Request, "~/bundles/otherlibaries")
+    @Html.OfflineScriptRender(Request, "~/bundles/knockout")
+    @Html.OfflineScriptRender(Request, "~/bundles/speaker")
+</body>
+</html>
+
+
+

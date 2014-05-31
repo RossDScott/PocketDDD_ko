@@ -1,0 +1,76 @@
+﻿<div class="page" data-bind="with: sessionHome, css: sessionHome.pageTransitionVM.activeStatusCSS">
+    <div class="row animateRow standardRow">
+        <div class="col-xs-4 colNoPad">
+            <button class="btn btn-default btn-sm cardBtn" data-bind="css:{active: displayType === 0}, click: showShortDescriptionClick">Summary</button>
+        </div>
+        <div class="col-xs-4 colNoPad">
+            <button class="btn btn-default btn-sm cardBtn" data-bind="css:{active: displayType === 1}, click: showLongDescriptionClick">Detail</button>
+        </div>
+        <div class="col-xs-4 colNoPad">
+            <button class="btn btn-default btn-sm cardBtn" data-bind="css:{active: displayType === 2}, click: showFeedbackClick">Feedback</button>
+        </div>
+    </div>
+    <div class="row animateRow standardRow white" data-bind="if: displayType === 0">
+        <div class="row animateRow standardRow white" data-bind="with: currentSessionData">
+            <h2><span data-bind="text: session.title"></span></h2>
+            <h2><small data-bind="text: session.speaker"></small></h2>
+            <h3><span data-bind="text: fromToText"></span> - <small data-bind="text: trackAndRoom"></small></h3>
+        </div>
+        <div class="row animateRow standardRow" data-bind="with: currentSessionData">
+            <div class="col-xs-6 colNoPad">
+                <button class="btn btn-default cardBtn filterButton pull-right collapseTriggerBtn" data-bind="click: $parent.bookmarkThisClick"><span class="glyphicon glyphicon-bookmark" data-bind="css: userSessionData.bookmarked ? 'bookmarked' : 'notBookmarked'"></span> <span data-bind="text: userSessionData.bookmarked ? 'Bookmarked' : 'Bookmark this'"></span></button>
+            </div>
+            <div class="col-xs-6 colNoPad">
+                <button class="btn btn-default cardBtn filterButton pull-right collapseTriggerBtn" data-bind="click: $parent.expandingAmIGoingChoiceSection.showHideExpand"><span class="glyphicon" data-bind="css: attendanceSelectedChoiceIcon"></span> <span data-bind="text: attendanceSelectedChoice"></span></button>
+            </div>
+        </div>
+        <div class="row animateRow standardRow expandGroup" data-bind="collapsableSection: expandingAmIGoingChoiceSection">
+            <div class="col-xs-12 colNoPad">
+                <div class="row rowButtedUp collapse collapseTarget">
+                    <div class="col-xs-12 colNoPad">
+                        <div class="card filter" data-bind="with: currentSessionData">
+                            <h4>Sort/Filter By:</h4>
+                            <ul class="filterList" data-bind="foreach: amIGoingChoiceOptions">
+                                <li><button class="btn btn-default btn-sm cardBtn" data-bind="html: choiceText, click: $parents[1].amIGoingChoiceOptionsClick"></button></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- ko with: currentSessionData -->
+        <p data-bind="html: session.shortDescription"></p>
+        <!-- /ko -->
+    </div>
+    <div class="row animateRow standardRow white" data-bind="if: displayType === 1">
+        <div class="row animateRow standardRow white" data-bind="with: currentSessionData">
+            <h4 class="nudgeUp"><span data-bind="text: session.title"></span></h4>
+            <h2><small data-bind="text: session.speaker"></small></h2>
+        </div>
+        <hr />
+        <!-- ko with: currentSessionData -->
+        <p data-bind="html: session.fullDescription"></p>
+        <!-- /ko -->
+    </div>
+    <div class="row animateRow standardRow white" data-bind="if: displayType === 2">
+        <div class="row animateRow standardRow white" data-bind="with: currentSessionData">
+            <h4 class="nudgeUp"><span data-bind="text: session.title"></span></h4>
+            <h2><small data-bind="text: session.speaker"></small></h2>
+        </div>
+        <hr />
+        <div class="row standardRow" data-bind="with: currentSessionData">
+            <div class="col-xs-12 colNoPad">
+                <label>Speaker's knowledge of the subject</label>
+                <input type="number" data-bind="rating: ko.getObservable(userSessionData, 'speakerKnowledgeRating')" min=1 max=10 step=1 data-size="sm" data-rtl="false" data-show-clear="false" data-show-caption="false" />
+            </div>
+        </div>
+        <div class="row standardRow" data-bind="with: currentSessionData">
+            <div class="col-xs-12 colNoPad">
+                <label>Speaker's presentation skills</label>
+                <input type="number" value="" data-bind="rating: ko.getObservable(userSessionData, 'speakerSkillsRating')" min=1 max=10 step=1 data-size="sm" data-rtl="false" data-show-clear="false" data-show-caption="false" />
+            </div>
+        </div>
+        <hr />
+        <div data-bind="template: { name: 'comments-template', data: privateComments }"></div>
+    </div>
+</div>

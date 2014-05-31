@@ -1,0 +1,21 @@
+﻿<div class="page" data-bind="with: intro, css: intro.pageTransitionVM.activeStatusCSS">
+    <div class="row animateRow standardRow">
+        <div class="col-xs-12 colNoPad">
+            <div class="card clearfix">
+                <h3 data-bind="visible: currentPosition ===0">Welcome...</h3>
+                <p data-bind="html: introContent">
+                    
+                </p>
+                <button type="button" data-bind="click:backClick, disable: currentPosition === 0, visible: !hasReachedEnd" class="btn btn-default btn-sm pull-left mobileHoverFix">
+                    <span class="glyphicon glyphicon-circle-arrow-left"></span> Back
+                </button>
+                <button type="button" data-bind="click:nextClick, visible: !hasReachedEnd" class="btn btn-default btn-sm pull-right">
+                    <span class="glyphicon glyphicon-circle-arrow-right"></span> Next
+                </button>
+                <button type="button" data-bind="click:finishClick, visible: hasReachedEnd" class="btn btn-default btn-sm pull-right">
+                    <span class="glyphicon glyphicon-ok"></span> Ok I get it
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+﻿<div class="page" data-bind="with: eventList, css: eventList.pageTransitionVM.activeStatusCSS">
+    <div class="row animateRow standardRow expandGroup" data-bind="collapsableSection: expandingFilterSection">
+        <div class="col-xs-12 colNoPad">
+            <div class="row standardRow">
+                <div class="pull-right col-xs-6 colNoPad">
+                    <button class="btn btn-default btn-sm filterButton pull-right collapseTriggerBtn" data-bind="click: expandingFilterSection.showHideExpand"><span class="glyphicon glyphicon-sort-by-attributes"></span> Upcoming events</button>
+                </div>
+            </div>
+            <div class="row rowButtedUp collapse collapseTarget">
+                <div class="col-xs-12 colNoPad">
+                    <div class="card" style="position: relative">
+                        Why would you want to change the sort order when there is only one item listed?<br />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div data-bind="foreach: dddEvents">
+        <div class="row animateRow standardRow">
+            <div class="col-xs-12 colNoPad">
+                <div class="card" style="position: relative" data-bind="click: $parent.eventItemCLick">
+                    <h2><span data-bind="text: name"></span><span class="small" data-bind="text:city" style="margin-left:1.2em;"></span>, <span class="small" data-bind="text: $parent.getListDateString($data.date)"></span></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

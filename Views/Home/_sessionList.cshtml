@@ -1,0 +1,190 @@
+﻿<div class="page" data-bind="with: sessionList, css: sessionList.pageTransitionVM.activeStatusCSS">
+    <div class="row animateRow standardRow expandGroup" data-bind="collapsableSection: expandingFilterSection">
+        <div class="col-xs-12 colNoPad">
+            <div class="row standardRow">
+                <div class="pull-right col-xs-6 colNoPad">
+                    <button class="btn btn-default btn-sm filterButton pull-right collapseTriggerBtn" data-bind="click: expandingFilterSection.showHideExpand"><span class="glyphicon glyphicon-sort-by-attributes"></span> <span data-bind="text: currentFilter"></span></button>
+                </div>
+            </div>
+            <div class="row rowButtedUp collapse collapseTarget">
+                <div class="col-xs-12 colNoPad">
+                    <div class="card filter">
+                        <h4>Sort/Filter By:</h4>
+                        <ul class="filterList" data-bind="foreach: filterOptions">
+                            <li><button class="btn btn-default btn-sm cardBtn" data-bind="html: $data, click: $parent.filterByClick"></button></li>
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @*Session Name*@
+    <!-- ko if: currentFilter === filterOptions[1] -->
+    <div data-bind="foreach: sessionsBySessionName">
+        <div class="row animateRow standardRow">
+            <div class="col-xs-12 colNoPad">
+                <div class="card clearfix" data-bind="click: $parent.sessionItemCLick">
+                    <h3><span data-bind="text: title"></span></h3>
+                    <h4><span class="pull-left" data-bind="text: speaker"></span><span class="pull-right"><span data-bind="text: track.name"></span> @@ <span data-bind="text: $parent.formatTime(timeSlot.from)"></span></span></h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /ko -->
+    @*Speaker Name*@
+    <!-- ko if: currentFilter === filterOptions[2] -->
+    <div data-bind="foreach: sessionsBySpeakerName">
+        <div class="row animateRow standardRow">
+            <div class="col-xs-12 colNoPad">
+                <div class="card clearfix" data-bind="click: $parent.sessionItemCLick">
+                    <h3><span data-bind="text: speaker"></span></h3>
+                    <h4 class="clearfix">
+                        <span class="pull-left" data-bind="text: title"></span>
+                    </h4>
+                    <h4 class="clearfix">
+                        <span class="pull-right"><span data-bind="text: track.name"></span> @@ <span data-bind="text: $parent.formatTime(timeSlot.from)"></span></span>
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /ko -->
+    @*Time Slot*@
+    <!-- ko if: currentFilter === filterOptions[0] -->
+    <div data-bind="foreach: timeSlots">
+        <div class="row animateRow standardRow">
+            <h4 style="color: white"><span data-bind="text: $parent.formatTime(from)"></span><span class="small"> to </span><span class="small" data-bind="text: $parent.formatTime(to)"></span></h4>
+            <div data-bind="foreach: $parent.currentEventData.getSessionsForTimeSlot($data)">
+                <div class="row animateRow standardRow">
+                    <div class="col-xs-12 colNoPad">
+                        <div class="card clearfix" data-bind="click: $parents[1].sessionItemCLick">
+                            <h3><span data-bind="text: title"></span></h3>
+                            <h4><span class="pull-left" data-bind="text: speaker"></span><span class="pull-right"><span data-bind="text: track.name"></span></span></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row animateRow standardRow" data-bind="if: info">
+                <div class="col-xs-12 colNoPad">
+                    <div class="card thin clearfix ">
+                        <h3><span data-bind="text: info"></span></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /ko -->
+    @*Track*@
+    <!-- ko if: currentFilter === filterOptions[3] -->
+    <div data-bind="foreach: tracks">
+        <div class="row animateRow standardRow">
+            <h4 style="color: white"><span data-bind="text: name"></span><span class="small"> - </span><span class="small" data-bind="text: roomName"></span></h4>
+            <div data-bind="foreach: $parent.currentEventData.getSessionsForTrack($data)">
+                <div class="row animateRow standardRow">
+                    <div class="col-xs-12 colNoPad">
+                        <div class="card clearfix" data-bind="click: $parents[1].sessionItemCLick">
+                            <h3><span data-bind="text: title"></span></h3>
+                            <h4><span class="pull-left" data-bind="text: speaker"></span><span class="pull-right"><span data-bind="text: $parents[1].formatTime(timeSlot.from)"></span></span></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /ko -->
+    @*Bookmarks*@
+    <!-- ko if: currentFilter === filterOptions[4] -->
+    <div data-bind="if: !currentEventData || !currentEventData.hasBookmarks">
+        <div class="row animateRow standardRow">
+            <div class="col-xs-12 colNoPad">
+                <div class="card clearfix">
+                    <h3>No bookmarks!</h3>
+                    <h4>Click on the bookmark <span class="glyphicon glyphicon-bookmark"></span> button in a session to view them here.</h4>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    <div data-bind="if: currentEventData && currentEventData.hasBookmarks">
+        <div data-bind="foreach: timeSlots">
+            <div class="row animateRow standardRow">
+                <h4 style="color: white"><span data-bind="text: $parent.formatTime(from)"></span><span class="small"> to </span><span class="small" data-bind="text: $parent.formatTime(to)"></span></h4>
+                <div data-bind="foreach: $parent.currentEventData.getBookmarkedSessionsForTimeSlot($data)">
+                    <div class="row animateRow standardRow">
+                        <div class="col-xs-12 colNoPad">
+                            <div class="card clearfix" data-bind="click: $parents[1].sessionItemCLick">
+                                <h3><span data-bind="text: title"></span></h3>
+                                <h4><span class="pull-left" data-bind="text: speaker"></span><span class="pull-right"><span data-bind="text: track.name"></span></span></h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row animateRow standardRow" data-bind="if: info">
+                    <div class="col-xs-12 colNoPad">
+                        <div class="card thin clearfix ">
+                            <h3><span data-bind="text: info"></span></h3>
+                        </div>
+                    </div>
+                </div>
+                <div data-bind="visible: !info && $parent.currentEventData.getBookmarkedSessionsForTimeSlot($data).length == 0">
+                    <div class="row animateRow standardRow">
+                        <div class="col-xs-12 colNoPad">
+                            <div class="card thin clearfix">
+                                No sessions bookmarked
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /ko -->
+    @*Attending*@
+    <!-- ko if: currentFilter === filterOptions[5] -->
+    <div data-bind="if: !currentEventData || !currentEventData.hasAttending">
+        <div class="row animateRow standardRow">
+            <div class="col-xs-12 colNoPad">
+                <div class="card clearfix">
+                    <h3>Not Attending Yet...</h3>
+                    <h4>This page will be filled with the sessions marked as attending.</h4>
+                    <h4>Click on the attending choice button in a session and mark it as 'Attending' to view it here.</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div data-bind="if: currentEventData && currentEventData.hasAttending">
+        <div data-bind="foreach: timeSlots">
+            <div class="row animateRow standardRow">
+                <h4 style="color: white"><span data-bind="text: $parent.formatTime(from)"></span><span class="small"> to </span><span class="small" data-bind="text: $parent.formatTime(to)"></span></h4>
+                <div data-bind="foreach: $parent.currentEventData.getAttendingSessionsForTimeSlot($data)">
+                    <div class="row animateRow standardRow">
+                        <div class="col-xs-12 colNoPad">
+                            <div class="card clearfix" data-bind="click: $parents[1].sessionItemCLick">
+                                <h3><span data-bind="text: title"></span></h3>
+                                <h4><span class="pull-left" data-bind="text: speaker"></span><span class="pull-right"><span data-bind="text: track.name"></span></span></h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row animateRow standardRow" data-bind="if: info">
+                    <div class="col-xs-12 colNoPad">
+                        <div class="card thin clearfix ">
+                            <h3><span data-bind="text: info"></span></h3>
+                        </div>
+                    </div>
+                </div>
+                <div data-bind="visible: !info && $parent.currentEventData.getAttendingSessionsForTimeSlot($data).length == 0">
+                    <div class="row animateRow standardRow">
+                        <div class="col-xs-12 colNoPad">
+                            <div class="card thin clearfix">
+                                Not attending anything yet
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /ko -->
+</div>

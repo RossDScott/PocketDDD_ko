@@ -1,0 +1,23 @@
+﻿
+<script type="text/html" id="comments-template">
+    <label data-bind="text: title"></label>
+    <span class="glyphicon glyphicon-plus-sign btn btn-lg pull-right" data-bind="visible: !showAdd, click: newCommentClick"></span>
+
+    <div class="row standardRow" data-bind="visible: showAdd">
+        <div class="col-xs-12 colNoPad clearfix">
+            <textarea class="form-control" rows="2" data-bind="value: newComment"></textarea>
+            <button class="btn btn-default btn-sm pull-right" data-bind="click: cancelCommentClick">Cancel</button>
+            <button class="btn btn-default btn-sm pull-right" data-bind="click: addCommentClick">Add comment</button>
+        </div>
+    </div>
+    <div class="row standardRow" data-bind="">
+        <div class="col-xs-12 colNoPad clearfix" data-bind="foreach: orderedComments">
+            <div class="row standardRow">
+                <div class="col-xs-12 colNoPad clearfix">
+                    <span class="smallHeader" data-bind="text: $parent.formatDate(date)"></span><br />
+                    <span data-bind="text: comment"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
