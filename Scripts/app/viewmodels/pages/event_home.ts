@@ -10,11 +10,11 @@
 
             this.eventBriteRegistration = new EventBriteRegistration();
 
-            
             ko.track(this);
 
             ko.defineProperty(this, "isRegistered", () => this.currentEventData ? this.currentEventData.isRegistered : false);
-
+            ko.defineProperty(this, "requiresEventFeedback", () => this.currentEventData ? this.currentEventData.dddEvent.requiresEventFeedback : false);
+            ko.defineProperty(this, "requiresEventbriteLogin", () => this.currentEventData ? this.currentEventData.dddEvent.requiresEventbriteLogin : false);
         }
 
         show(dddEvent: DDDEvent) {
@@ -38,8 +38,13 @@
         viewFeedbackClick = () => {
             this.nav.navigateTo(PageType.eventFeedback, this.currentEventData);
         }
-        getListDateString(date: Moment) {
-            return date ? date.format("ddd Do MMM YY") : "no date";
+
+        getListDateString(date: Date) {
+            if (!date)
+                return "no date";
+
+            var m = moment(date);
+            return m.format("ddd Do MMM YYYY");
         }
 
         eventScoreClick = () => {

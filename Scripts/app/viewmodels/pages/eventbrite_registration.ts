@@ -25,6 +25,7 @@
         }
 
         show(data: EventDataVM) {
+            this.reset();
             this.currentEventData = data;
             this.visible = !data.isRegistered;
         }

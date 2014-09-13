@@ -29,8 +29,10 @@ namespace PocketDDD.Controllers.API
 
                 if (user == null)
                 {
-                    var eventbriteService = new EventbriteService();
-                    var eventbriteUserInfo = await eventbriteService.GetUserRegistrationInfo(eventbriteOrderNo);
+                    var eventMgr = new EventsService();
+                    var eventInfo = eventMgr.GetServerEventData(dddEventId);
+                    var eventbriteService = new EventbriteService(eventInfo.EventbriteToken);
+                    var eventbriteUserInfo = await eventbriteService.GetUserRegistrationInfo(eventbriteOrderNo, eventInfo.EventbriteEventId);
                     var newToken = Guid.NewGuid().ToString();
                     userService.AddUser(dddEventId, eventbriteOrderNo, eventbriteUserInfo.firstName, eventbriteUserInfo.lastName, newToken, clientToken);
                     registeredUser = new UserInfo

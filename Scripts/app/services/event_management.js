@@ -39,6 +39,17 @@
                 return this.localData.getEvents();
             };
 
+            EventManagement.prototype.getEventsForSyncAndBuildVMData = function () {
+                var _this = this;
+                var events = this.getEventList().filter(function (e) {
+                    return e.isActive;
+                });
+                events.forEach(function (e) {
+                    return _this.getEventData(e);
+                });
+                return events;
+            };
+
             EventManagement.prototype.getEventData = function (dddEvent) {
                 if (!dddEvent.vmData) {
                     dddEvent.vmData = new PocketDDD.VM.EventDataVM(dddEvent);

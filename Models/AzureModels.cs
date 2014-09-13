@@ -9,7 +9,17 @@ namespace PocketDDD.Models.Azure
     public class DDDEventEntity : TableEntity
     {
         public string Name { get; set; }
-
+        public DateTime Date { get; set; }
+        public string City { get; set; }
+        public int Version { get; set; }
+        public bool IsActive { get; set; }
+        public string Address { get; set; }
+        public string EventbriteToken { get; set; }
+        public string EventbriteEventId { get; set; }
+        public string AdminToken { get; set; }
+        public bool RequiresEventbriteLogin { get; set; }
+        public bool RequiresEventFeedback { get; set; }
+        public bool RequiresSessionFeedback { get; set; }
     }
 
     public class EventBriteUserTokenMapping : TableEntity
@@ -73,5 +83,11 @@ namespace PocketDDD.Models.Azure
         public int DDDEventId { get; set; }
         public string UserName { get; set; }
         public int Score { get; set; }
+    }
+
+    public class SpeakerMapping: TableEntity
+    {
+        public int EventId { get; set; }
+        public int SessionId { get; set; }
     }
 }

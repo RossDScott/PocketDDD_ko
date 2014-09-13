@@ -12,6 +12,7 @@
     }
 
     export interface SyncUserComment {
+        eventId: number;
         id: string;
         sessionId: number;
         date: Date;
@@ -19,6 +20,7 @@
     }
 
     export interface SyncSessionUserData {
+        eventId: number;
         sessionId: number;
         bookmarked: boolean;
         attendingStatus: AttendanceType;
@@ -27,6 +29,7 @@
     }
 
     export interface SyncEventUserData{
+        eventId: number;
         refreshments?: number;
         venue?: number;
         overall?: number;
@@ -35,31 +38,40 @@
     }
 
     export interface AcceptedUserComment {
+        eventId: number;
         id: string;
         sessionId: number;
     }
 
-    export interface SyncData {
+    export interface DDDEventDataInfo {
         eventId: number;
-        clientToken: string;
+        dataVersion: number;
         userToken: string;
+    }
+
+    export interface SyncData {
+        clientToken: string;
         dddEventListVersion: number;
-        dddEventDataVersion: number;
+        dddEventDataInfo: DDDEventDataInfo[];
         sessionComments: SyncUserComment[];
         userSessionData: SyncSessionUserData[];
-        userEventData: SyncEventUserData;
+        userEventData: SyncEventUserData[];
         eventMostLikeComments: SyncUserComment[];
         eventLeastLikeComments: SyncUserComment[];
         pocketDDDComments: SyncUserComment[];
         eventComments: SyncUserComment[];
     }
 
+    export interface DDDEventScoreInfo {
+        eventId: number;
+        score: number;
+    }
+
     export interface SyncResult {
-        dddEventId: number
         dddEventListVersion: number;
         dddEvents: DDDEvent[];
-        dddEventDetail: DDDEventDetail;
-        dddEventScore: number;
+        dddEventDetails: DDDEventDetail[];
+        dddEventScores: DDDEventScoreInfo[];
         acceptedSessionComments: AcceptedUserComment[];
         acceptedEventComments: AcceptedUserComment[];
         acceptedEventMostLikeComments: AcceptedUserComment[];

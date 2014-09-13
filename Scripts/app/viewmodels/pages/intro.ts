@@ -21,9 +21,9 @@
                     case 0:
                         return "This application has been designed to support current and future DDD events.<br / > You can view sessions and speakers, along with providing ratings and feedback comments.";
                     case 1:
-                        return "Each time you rate a session, provide feedback comments or rate the event you will be given an extra chance of winning in the prize draw.</br>The app will show you your event score which == entries into the prize draw.</br>You must register using your eventbrite order number to be entered into the draw. Anon feedback is fine, but you won't get an event score!";
+                        return "If the event supports it then, each time you rate a session, provide feedback comments or rate the event you will be given an extra chance of winning in the prize draw.</br>The app will show you your event score which == entries into the prize draw.</br>You must register using your eventbrite order number to be entered into the draw. Anon feedback is fine, but you won't get an event score!";
                     case 2:
-                        return "The app was created by Ross Scott and the source will be available on GitHub (todo).</br>Feedback is very welcome:</br>@RossDScott</br>ross.d.scott@gmail.com</br>Or through the app itself";
+                        return "The app was created by Ross Scott and the source will be available on GitHub: https://github.com/RossDScott/PocketDDD.</br>Feedback is very welcome:</br>@RossDScott</br>ross.d.scott@gmail.com</br>Or through the app itself";
                     case 3:
                         return "You won't be bothered by this page again.";
                 }

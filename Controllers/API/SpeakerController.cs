@@ -10,14 +10,16 @@ namespace PocketDDD.Controllers.API
 {
     public class SpeakerController : Controller
     {
-
         [HttpGet]
         public ActionResult GetMyRatings(string speakerId)
         {
-            var speakerService = new SpeakerService();
+            var speakerService = new SpeakerService(speakerId);
 
-            var ratings = speakerService.GetMyRatings(speakerId);
-            var comments = speakerService.GetMyComments(speakerId);
+            if(speakerService.speakerMapping == null)
+                return new JsonNetResult(null);
+
+            var ratings = speakerService.GetMyRatings();
+            var comments = speakerService.GetMyComments();
 
             var knowedgeRating = ratings
                 .Where(x=>x.SpeakerKnowledgeRating != null)
@@ -39,7 +41,6 @@ namespace PocketDDD.Controllers.API
                 .Select(x=> new {score = x.Key, count = x.Count()});
 
             double avgSkill = (double) skillsRating.Sum() / (double) skillsRating.Count();
-
 
             var data = new { 
                 calcRating = new {

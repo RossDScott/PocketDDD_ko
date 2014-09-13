@@ -7,10 +7,15 @@
         vmData?: VM.EventDataVM;
         version: number;
         isActive: boolean;
+        address: string;
+        requiresEventbriteLogin: boolean;
+        requiresEventFeedback: boolean;
+        requiresSessionFeedback: boolean;
     }
 
     export interface DDDEventDetail {
         dddEventId: number;
+        version: number;
         sessions: Session[];
         tracks: Track[];
         timeSlots: TimeSlot[]

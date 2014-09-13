@@ -33,6 +33,10 @@ var PocketDDD;
                 this.dddEvents = PocketDDD.appState.events;
                 this.expandingFilterSection = new PocketDDD.VM.ExpandingSection();
                 ko.track(this);
+
+                ko.defineProperty(this, "eventsByDateDesc", function () {
+                    return _this.dddEvents ? _.sortBy(_this.dddEvents, "date").reverse() : [];
+                });
             }
             EventListPage.prototype.getListDateString = function (date) {
                 if (!date)

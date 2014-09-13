@@ -56,6 +56,7 @@
                 });
             }
             EventBriteRegistration.prototype.show = function (data) {
+                this.reset();
                 this.currentEventData = data;
                 this.visible = !data.isRegistered;
             };

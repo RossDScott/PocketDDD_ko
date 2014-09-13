@@ -7,6 +7,12 @@
             return this.localData.getEvents();
         }
 
+        getEventsForSyncAndBuildVMData(): DDDEvent[]{
+            var events = this.getEventList().filter(e=> e.isActive);
+            events.forEach(e=> this.getEventData(e));
+            return events;
+        }
+
         getEventData(dddEvent: DDDEvent): VM.EventDataVM{
             if (!dddEvent.vmData) {
                 dddEvent.vmData = new VM.EventDataVM(dddEvent);

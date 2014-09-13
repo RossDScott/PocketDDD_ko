@@ -16,114 +16,107 @@
             };
 
             SyncManagement.prototype.syncData = function () {
-                //var eventsToSync = appState.events.filter(x=> x.isActive);
-                ////should really wait for one to finish before doing the next
-                //eventsToSync.forEach(event=> {
-                //    this.syncEvent(event);
-                //});
-                //hack
-                var event = PocketDDD.appState.events[0];
-                return this.syncEvent(event);
+                return this.syncActiveEvents();
             };
 
-            SyncManagement.prototype.syncEvent = function (dddEvent) {
+            SyncManagement.prototype.syncActiveEvents = function () {
                 var _this = this;
                 var server = new PocketDDD.Services.ServerData();
+                var dddEvents = this.eventMgr.getEventsForSyncAndBuildVMData();
 
-                var data;
+                var sessionComments = [];
+                var eventMostLikeComments = [];
+                var eventLeastLikeComments = [];
+                var pocketDDDComments = [];
+                var eventComments = [];
+                var dddEventDataInfo = [];
+                var sessionData = [];
+                var userEventData = [];
 
-                if (dddEvent) {
-                    var eventVM = this.eventMgr.getEventData(dddEvent);
-
-                    var sessionComments = [];
-                    eventVM.userData.sessionData.forEach(function (s) {
+                dddEvents.forEach(function (dddEvent) {
+                    dddEvent.vmData.userData.sessionData.forEach(function (s) {
                         return s.privateComments.filter(function (c) {
                             return !c.isSynched;
                         }).forEach(function (c) {
                             return sessionComments.push({
-                                id: c.id, sessionId: s.sessionId, comment: c.comment, date: c.date
+                                eventId: dddEvent.id, id: c.id, sessionId: s.sessionId, comment: c.comment, date: c.date
                             });
                         });
                     });
 
-                    var eventMostLikeComments = eventVM.userData.eventFeedback.mostLike.filter(function (c) {
+                    dddEvent.vmData.userData.eventFeedback.mostLike.filter(function (c) {
                         return !c.isSynched;
-                    }).map(function (c) {
-                        return {
-                            id: c.id, sessionId: null, comment: c.comment, date: c.date
-                        };
-                    });
-                    var eventLeastLikeComments = eventVM.userData.eventFeedback.leastLike.filter(function (c) {
-                        return !c.isSynched;
-                    }).map(function (c) {
-                        return {
-                            id: c.id, sessionId: null, comment: c.comment, date: c.date
-                        };
-                    });
-                    var pocketDDDComments = eventVM.userData.eventFeedback.pocketDDD.filter(function (c) {
-                        return !c.isSynched;
-                    }).map(function (c) {
-                        return {
-                            id: c.id, sessionId: null, comment: c.comment, date: c.date
-                        };
-                    });
-                    var eventComments = eventVM.userData.eventFeedback.comments.filter(function (c) {
-                        return !c.isSynched;
-                    }).map(function (c) {
-                        return {
-                            id: c.id, sessionId: null, comment: c.comment, date: c.date
-                        };
+                    }).forEach(function (c) {
+                        return eventMostLikeComments.push({
+                            eventId: dddEvent.id, id: c.id, sessionId: null, comment: c.comment, date: c.date
+                        });
                     });
 
-                    var sessionData = eventVM.userData.sessionData.map(function (x) {
-                        return {
+                    dddEvent.vmData.userData.eventFeedback.leastLike.filter(function (c) {
+                        return !c.isSynched;
+                    }).forEach(function (c) {
+                        return eventLeastLikeComments.push({
+                            eventId: dddEvent.id, id: c.id, sessionId: null, comment: c.comment, date: c.date
+                        });
+                    });
+
+                    dddEvent.vmData.userData.eventFeedback.pocketDDD.filter(function (c) {
+                        return !c.isSynched;
+                    }).forEach(function (c) {
+                        return pocketDDDComments.push({
+                            eventId: dddEvent.id, id: c.id, sessionId: null, comment: c.comment, date: c.date
+                        });
+                    });
+
+                    dddEvent.vmData.userData.eventFeedback.comments.filter(function (c) {
+                        return !c.isSynched;
+                    }).forEach(function (c) {
+                        return eventComments.push({
+                            eventId: dddEvent.id, id: c.id, sessionId: null, comment: c.comment, date: c.date
+                        });
+                    });
+
+                    dddEventDataInfo.push({
+                        eventId: dddEvent.id,
+                        dataVersion: dddEvent.vmData.dddEventDetail ? dddEvent.vmData.dddEventDetail.version : 0,
+                        userToken: dddEvent.vmData.userData.userRegistration ? dddEvent.vmData.userData.userRegistration.token : null
+                    });
+
+                    dddEvent.vmData.userData.sessionData.forEach(function (x) {
+                        return sessionData.push({
+                            eventId: dddEvent.id,
                             sessionId: x.sessionId,
                             attendingStatus: x.attendingStatus,
                             bookmarked: x.bookmarked,
                             speakerKnowledgeRating: x.speakerKnowledgeRating,
                             speakerSkillsRating: x.speakerSkillsRating
-                        };
+                        });
                     });
 
-                    var userEventData = {
-                        venue: eventVM.userData.eventFeedback.venue,
-                        refreshments: eventVM.userData.eventFeedback.refreshments,
-                        overall: eventVM.userData.eventFeedback.overall,
-                        easterEggP: eventVM.userData.eventFeedback.easterEggP,
-                        easterEggRR: eventVM.userData.eventFeedback.easterEggRR
-                    };
-
-                    var userToken = eventVM.userData.userRegistration ? eventVM.userData.userRegistration.token : null;
-                    data = {
+                    userEventData.push({
                         eventId: dddEvent.id,
-                        userToken: userToken,
-                        clientToken: this.localData.getClientToken(),
-                        dddEventListVersion: this.localData.getDDDEventListVersion(),
-                        dddEventDataVersion: dddEvent.version,
-                        sessionComments: sessionComments,
-                        eventLeastLikeComments: eventLeastLikeComments,
-                        eventMostLikeComments: eventMostLikeComments,
-                        eventComments: eventComments,
-                        pocketDDDComments: pocketDDDComments,
-                        userSessionData: sessionData,
-                        userEventData: userEventData
-                    };
-                } else {
-                    data = {
-                        dddEventListVersion: 0,
-                        dddEventDataVersion: 0,
-                        eventId: -1,
-                        clientToken: this.localData.getClientToken(),
-                        userToken: null,
-                        sessionComments: [],
-                        eventLeastLikeComments: [],
-                        eventMostLikeComments: [],
-                        eventComments: [],
-                        pocketDDDComments: [],
-                        userSessionData: [],
-                        userEventData: null
-                    };
-                }
+                        venue: dddEvent.vmData.userData.eventFeedback.venue,
+                        refreshments: dddEvent.vmData.userData.eventFeedback.refreshments,
+                        overall: dddEvent.vmData.userData.eventFeedback.overall,
+                        easterEggP: dddEvent.vmData.userData.eventFeedback.easterEggP,
+                        easterEggRR: dddEvent.vmData.userData.eventFeedback.easterEggRR
+                    });
+                });
+
+                var eventListVersion = (dddEvents && dddEvents.length > 0) ? this.localData.getDDDEventListVersion() : 0;
+
+                var data = {
+                    clientToken: this.localData.getClientToken(),
+                    dddEventListVersion: eventListVersion,
+                    dddEventDataInfo: dddEventDataInfo,
+                    sessionComments: sessionComments,
+                    eventLeastLikeComments: eventLeastLikeComments,
+                    eventMostLikeComments: eventMostLikeComments,
+                    eventComments: eventComments,
+                    pocketDDDComments: pocketDDDComments,
+                    userSessionData: sessionData,
+                    userEventData: userEventData
+                };
 
                 return server.sync(data).then(function (data) {
                     var localData = new PocketDDD.Services.LocalData();
@@ -134,28 +127,28 @@
                             _this.refreshEvents(data.dddEvents);
                         }
 
-                        if (data.dddEventDetail)
-                            _this.refreshEventDetail(data.dddEventDetail);
+                        if (data.dddEventDetails)
+                            data.dddEventDetails.forEach(function (eventDetail) {
+                                return _this.refreshEventDetail(eventDetail);
+                            });
 
-                        if (data.dddEventId === -1)
-                            return;
+                        if (data.acceptedSessionComments)
+                            _this.markUserSessionCommentsAsSynched(data.acceptedSessionComments);
 
-                        if (data.acceptedSessionComments && data.acceptedSessionComments.length > 0)
-                            _this.markUserSessionCommentsAsSynched(data.dddEventId, data.acceptedSessionComments);
+                        if (data.acceptedEventMostLikeComments)
+                            _this.markUserEventMostLikeCommentsAsSynched(data.acceptedEventMostLikeComments);
 
-                        if (data.acceptedEventMostLikeComments && data.acceptedEventMostLikeComments.length > 0)
-                            _this.markUserEventMostLikeCommentsAsSynched(data.dddEventId, data.acceptedEventMostLikeComments);
+                        if (data.acceptedEventLeastLikeComments)
+                            _this.markUserEventLeastLikeCommentsAsSynched(data.acceptedEventLeastLikeComments);
 
-                        if (data.acceptedEventLeastLikeComments && data.acceptedEventLeastLikeComments.length > 0)
-                            _this.markUserEventLeastLikeCommentsAsSynched(data.dddEventId, data.acceptedEventLeastLikeComments);
+                        if (data.acceptedEventComments)
+                            _this.markUserEventCommentsAsSynched(data.acceptedEventComments);
 
-                        if (data.acceptedEventComments && data.acceptedEventComments.length > 0)
-                            _this.markUserEventCommentsAsSynched(data.dddEventId, data.acceptedEventComments);
+                        if (data.acceptedPocketDDDComments)
+                            _this.markUserPocketDDDCommentsAsSynched(data.acceptedPocketDDDComments);
 
-                        if (data.acceptedPocketDDDComments && data.acceptedPocketDDDComments.length > 0)
-                            _this.markUserPocketDDDCommentsAsSynched(data.dddEventId, data.acceptedPocketDDDComments);
-
-                        _this.updateGameScore(data.dddEventId, data.dddEventScore ? +data.dddEventScore : 0);
+                        if (data.dddEventScores)
+                            _this.updateGameScore(data.dddEventScores);
                     }
 
                     return data;
@@ -181,70 +174,86 @@
                 eventDataVM.refreshEventDetail(eventDetail);
             };
 
-            SyncManagement.prototype.markUserSessionCommentsAsSynched = function (dddEventId, userComments) {
-                var event = _.find(PocketDDD.appState.events, { id: dddEventId });
-                var eventDataVM = this.eventMgr.getEventData(event);
-                eventDataVM.suppressServerChanges = true;
-                userComments.forEach(function (x) {
-                    var session = _.find(eventDataVM.sessions, { id: x.sessionId });
+            SyncManagement.prototype.markUserSessionCommentsAsSynched = function (userComments) {
+                var _this = this;
+                //could be optimised to group by eventId
+                userComments.forEach(function (syncComment) {
+                    var event = _.find(PocketDDD.appState.events, { id: syncComment.eventId });
+                    var eventDataVM = _this.eventMgr.getEventData(event);
+                    eventDataVM.suppressServerChanges = true;
+
+                    var session = _.find(eventDataVM.sessions, { id: syncComment.sessionId });
                     var sessionVM = eventDataVM.getSessionVM(session);
-                    var comment = _.find(sessionVM.userSessionData.privateComments, { id: x.id });
+                    var comment = _.find(sessionVM.userSessionData.privateComments, { id: syncComment.id });
                     comment.isSynched = true;
+
+                    eventDataVM.suppressServerChanges = false;
                 });
-                eventDataVM.suppressServerChanges = false;
             };
 
-            SyncManagement.prototype.markUserEventCommentsAsSynched = function (dddEventId, userComments) {
-                var event = _.find(PocketDDD.appState.events, { id: dddEventId });
-                var eventDataVM = this.eventMgr.getEventData(event);
-                eventDataVM.suppressServerChanges = true;
+            SyncManagement.prototype.markUserEventCommentsAsSynched = function (userComments) {
+                var _this = this;
                 userComments.forEach(function (x) {
+                    var event = _.find(PocketDDD.appState.events, { id: x.eventId });
+                    var eventDataVM = _this.eventMgr.getEventData(event);
+                    eventDataVM.suppressServerChanges = true;
+
                     var comment = _.find(eventDataVM.userData.eventFeedback.comments, { id: x.id });
                     comment.isSynched = true;
+                    eventDataVM.suppressServerChanges = false;
                 });
-                eventDataVM.suppressServerChanges = false;
             };
-            SyncManagement.prototype.markUserEventLeastLikeCommentsAsSynched = function (dddEventId, userComments) {
-                var event = _.find(PocketDDD.appState.events, { id: dddEventId });
-                var eventDataVM = this.eventMgr.getEventData(event);
-                eventDataVM.suppressServerChanges = true;
+            SyncManagement.prototype.markUserEventLeastLikeCommentsAsSynched = function (userComments) {
+                var _this = this;
                 userComments.forEach(function (x) {
+                    var event = _.find(PocketDDD.appState.events, { id: x.eventId });
+                    var eventDataVM = _this.eventMgr.getEventData(event);
+                    eventDataVM.suppressServerChanges = true;
+
                     var comment = _.find(eventDataVM.userData.eventFeedback.leastLike, { id: x.id });
                     comment.isSynched = true;
+                    eventDataVM.suppressServerChanges = false;
                 });
-                eventDataVM.suppressServerChanges = false;
             };
-            SyncManagement.prototype.markUserEventMostLikeCommentsAsSynched = function (dddEventId, userComments) {
-                var event = _.find(PocketDDD.appState.events, { id: dddEventId });
-                var eventDataVM = this.eventMgr.getEventData(event);
-                eventDataVM.suppressServerChanges = true;
+            SyncManagement.prototype.markUserEventMostLikeCommentsAsSynched = function (userComments) {
+                var _this = this;
                 userComments.forEach(function (x) {
+                    var event = _.find(PocketDDD.appState.events, { id: x.eventId });
+                    var eventDataVM = _this.eventMgr.getEventData(event);
+                    eventDataVM.suppressServerChanges = true;
+
                     var comment = _.find(eventDataVM.userData.eventFeedback.mostLike, { id: x.id });
                     comment.isSynched = true;
+                    eventDataVM.suppressServerChanges = false;
                 });
-                eventDataVM.suppressServerChanges = false;
             };
-            SyncManagement.prototype.markUserPocketDDDCommentsAsSynched = function (dddEventId, userComments) {
-                var event = _.find(PocketDDD.appState.events, { id: dddEventId });
-                var eventDataVM = this.eventMgr.getEventData(event);
-                eventDataVM.suppressServerChanges = true;
+            SyncManagement.prototype.markUserPocketDDDCommentsAsSynched = function (userComments) {
+                var _this = this;
                 userComments.forEach(function (x) {
+                    var event = _.find(PocketDDD.appState.events, { id: x.eventId });
+                    var eventDataVM = _this.eventMgr.getEventData(event);
+                    eventDataVM.suppressServerChanges = true;
+
                     var comment = _.find(eventDataVM.userData.eventFeedback.pocketDDD, { id: x.id });
                     comment.isSynched = true;
+                    eventDataVM.suppressServerChanges = false;
                 });
-                eventDataVM.suppressServerChanges = false;
             };
-            SyncManagement.prototype.updateGameScore = function (dddEventId, score) {
-                var event = _.find(PocketDDD.appState.events, { id: dddEventId });
-                var eventDataVM = this.eventMgr.getEventData(event);
-                eventDataVM.suppressServerChanges = true;
+            SyncManagement.prototype.updateGameScore = function (eventScores) {
+                var _this = this;
+                eventScores.forEach(function (x) {
+                    var event = _.find(PocketDDD.appState.events, { id: x.eventId });
+                    var eventDataVM = _this.eventMgr.getEventData(event);
+                    eventDataVM.suppressServerChanges = true;
 
-                var currentScore = eventDataVM.userData.eventScore;
-                eventDataVM.userData.eventScore = score;
-                if (score > currentScore)
-                    PocketDDD.appState.setNewGameScore(score - currentScore);
+                    var currentScore = eventDataVM.userData.eventScore;
+                    var newScore = +x.score;
+                    eventDataVM.userData.eventScore = newScore;
+                    if (newScore > currentScore)
+                        PocketDDD.appState.setNewGameScore(newScore - currentScore);
 
-                eventDataVM.suppressServerChanges = false;
+                    eventDataVM.suppressServerChanges = false;
+                });
             };
             return SyncManagement;
         })();

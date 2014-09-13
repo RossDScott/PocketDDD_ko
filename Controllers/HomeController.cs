@@ -14,5 +14,9 @@ namespace PocketDDD.Controllers
             return View();
         }
 
+        public ActionResult online()
+        {
+            return View("Index");
+        }
     }
 }

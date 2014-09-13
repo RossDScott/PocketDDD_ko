@@ -162,12 +162,23 @@
             if (!detail)
                 detail = this.dal.getEventDetail(this.dddEvent.id);
 
-            detail.sessions.forEach(session => {
-                session.track = _.find<Track>(detail.tracks, <any> { id: session.trackId });
-                session.timeSlot = _.find<TimeSlot>(detail.timeSlots, <any> { id: session.timeSlotId });
-            });
+            if (detail) {
+                detail.sessions.forEach(session => {
+                    session.track = _.find<Track>(detail.tracks, <any> { id: session.trackId });
+                    session.timeSlot = _.find<TimeSlot>(detail.timeSlots, <any> { id: session.timeSlotId });
+                });
+                ko.track(detail);
 
-            ko.track(detail);
+                if (detail.sessions)
+                    detail.sessions.forEach(s=> ko.track(s));
+
+                if (detail.timeSlots)
+                    detail.timeSlots.forEach(ts=> ko.track(ts));
+
+                if (detail.tracks)
+                    detail.tracks.forEach(t=> ko.track(t));
+            }
+            
             this.dddEventDetail = detail;
         }
     }

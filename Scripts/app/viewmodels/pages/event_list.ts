@@ -3,6 +3,8 @@
         expandingFilterSection: ExpandingSection;
 
         dddEvents: DDDEvent[];
+        eventsByDateDesc: DDDEvent[];
+
 
         constructor(private nav: PageNav) {
             super(PageType.eventList, nav);
@@ -10,6 +12,8 @@
             this.dddEvents = appState.events;
             this.expandingFilterSection = new ExpandingSection();
             ko.track(this);
+
+            ko.defineProperty(this, "eventsByDateDesc", () => this.dddEvents ? _.sortBy(this.dddEvents, "date").reverse() : []);
         }
 
         eventItemCLick = (eventItem: DDDEvent) => {

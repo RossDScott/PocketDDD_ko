@@ -1,0 +1,31 @@
+﻿            UserInfo registeredUser = null;
+            //eventbriteOrderNo = 287216939;
+            //eventId = 
+            var req = new HttpRequestMessage(HttpMethod.Get, "https://www.eventbriteapi.com/v3/orders/" + eventbriteOrderNo.ToString() + "?token=BFGT4ZRIPIMOX7W3HTZ4");
+            //req.Headers.Add("Authorization", "Bearer BFGT4ZRIPIMOX7W3HTZ4");
+            req.Headers.Add("Cache-Control", "no-cache");
+
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("BFGT4ZRIPIMOX7W3HTZ4");
+
+            var response = await client.SendAsync(req);
+
+            if(response.StatusCode != HttpStatusCode.OK)
+                return new JsonNetResult(false);
+
+            var json = await response.Content.ReadAsStringAsync();
+            var data = JsonConvert.DeserializeObject<dynamic>(json);
+
+            var responseEventId = data["event"].id;
+            if(responseEventId != eventId){
+
+            }
+
+            registeredUser = new UserInfo
+            {
+                firstName = data.first_name,
+                lastName = data.last_name,
+                token = Guid.NewGuid().ToString(),
+                eventScore = 1
+            };

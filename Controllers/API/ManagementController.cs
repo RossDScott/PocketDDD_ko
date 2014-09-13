@@ -11,14 +11,11 @@ namespace PocketDDD.Controllers.API
     public class ManagementController : Controller
     {
         [HttpGet]
-        public ActionResult GetAllEventData(string id)
+        public ActionResult GetAllEventData(int eventId, string adminToken)
         {
             try
             {
-                if (id != "GUID GOES HERE") //Clearly this should be data driven as well
-                    return null;
-
-                var managementService = new ManagementService();
+                var managementService = new ManagementService(eventId, adminToken);
 
                 var ratings = managementService.GetEventUserData();
                 var comments = managementService.GetEventComments();
@@ -76,20 +73,16 @@ namespace PocketDDD.Controllers.API
             }
             catch (Exception)
             {
-
                 throw new Exception("Error");
             }
         }
 
         [HttpGet]
-        public ActionResult GetEventRatings(string id)
+        public ActionResult GetEventRatings(int eventId, string adminToken)
         {
             try
             {
-                if (id != "GUID GOES HERE") //Clearly this should be data driven as well
-                    return null;
-
-                var managementService = new ManagementService();
+                var managementService = new ManagementService(eventId, adminToken);
 
                 var ratings = managementService.GetEventUserData();
 
@@ -150,14 +143,11 @@ namespace PocketDDD.Controllers.API
         }
 
         [HttpGet]
-        public ActionResult GetEasterEggPeople(string id)
+        public ActionResult GetEasterEggPeople(int eventId, string adminToken)
         {
             try
             {
-                if (id != "GUID GOES HERE") //Clearly this should be data driven as well
-                    return null;
-
-                var managementService = new ManagementService();
+                var managementService = new ManagementService(eventId, adminToken);
 
                 var ratings = managementService.GetEventUserData();
 
@@ -191,14 +181,11 @@ namespace PocketDDD.Controllers.API
         }
 
         [HttpGet]
-        public ActionResult GetEventScores(string id)
+        public ActionResult GetEventScores(int eventId, string adminToken)
         {
             try
             {
-                if (id != "GUID GOES HERE") //Clearly this should be data driven as well
-                    return null;
-
-                var managementService = new ManagementService();
+                var managementService = new ManagementService(eventId, adminToken);
 
                 var scores = managementService.GetEventScores();
 
@@ -219,14 +206,11 @@ namespace PocketDDD.Controllers.API
         }
 
         [HttpGet]
-        public ActionResult GetWinners(string id)
+        public ActionResult GetWinners(int eventId, string adminToken)
         {
             try
             {
-                if (id != "GUID GOES HERE") //Clearly this should be data driven as well
-                    return null;
-
-                var managementService = new ManagementService();
+                var managementService = new ManagementService(eventId, adminToken);
 
                 var scores = managementService.GetEventScores();
 
@@ -242,8 +226,9 @@ namespace PocketDDD.Controllers.API
                 var winningNumbers = new List<int>();
                 var totalEntries = completeList.Count();
                 Random rnd = new Random();
+                var selectCount = totalEntries > 30 ? 30 : totalEntries;
 
-                for (int i = 0; i < 30; i++)
+                for (int i = 0; i < selectCount; i++)
                 {
                     var number = rnd.Next(0, totalEntries - 1);
                     if (!winningNumbers.Contains(number))
@@ -268,6 +253,28 @@ namespace PocketDDD.Controllers.API
             catch (Exception)
             {
 
+                throw new Exception("Error");
+            }
+        }
+
+        [HttpGet]
+        public ActionResult GenerateSpeakerMappings(int eventId, string adminToken)
+        {
+            try
+            {
+                var managementService = new ManagementService(eventId, adminToken);
+                var mappings = managementService.GenerateSpeakerMappings();
+
+                var url = HttpContext.Request.Url.Host + "/api/speaker/GetMyRatings?speakerId={0}"; 
+                foreach (var mapping in mappings)
+                {
+                    mapping.URL = string.Format(url, mapping.SpeakerToken);
+                }
+
+                return new JsonNetResult(mappings);
+            }
+            catch (Exception)
+            {
                 throw new Exception("Error");
             }
         }

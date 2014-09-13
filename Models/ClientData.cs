@@ -14,11 +14,16 @@ namespace PocketDDD.Models
         public string City { get; set; }
         public int Version { get; set; }
         public bool IsActive { get; set; }
+        public string Address { get; set; }
+        public bool RequiresEventbriteLogin { get; set; }
+        public bool RequiresEventFeedback { get; set; }
+        public bool RequiresSessionFeedback { get; set; }
     }
 
     public class DDDEventDetail
     {
         public int DDDEventId { get; set; }
+        public int Version { get; set; }
         public IList<Track> Tracks { get; set; }
         public IList<TimeSlot> TimeSlots { get; set; }
         public IList<Session> Sessions { get; set; }
@@ -59,21 +64,52 @@ namespace PocketDDD.Models
 
     public class AcceptedUserComment
     {
-        public int? SessionId { get; set; }
-        public string Id { get; set; }
+        public int eventId { get; set; }
+        public int? sessionId { get; set; }
+        public string id { get; set; }
     }
+
+    public class DDDEventScoreInfo
+    {
+        public int eventId { get; set; }
+        public int score { get; set; }
+    }
+
+    public class SyncResult
+    {
+        public int dddEventListVersion { get; set; }
+        public IList<DDDEvent> dddEvents { get; set; }
+        public IList<DDDEventDetail> dddEventDetails { get; set; }
+        public IList<DDDEventScoreInfo> dddEventScores { get; set; }
+        public IList<AcceptedUserComment> acceptedSessionComments { get; set; }
+        public IList<AcceptedUserComment> acceptedEventComments { get; set; }
+        public IList<AcceptedUserComment> acceptedEventMostLikeComments { get; set; }
+        public IList<AcceptedUserComment> acceptedEventLeastLikeComments { get; set; }
+        public IList<AcceptedUserComment> acceptedPocketDDDComments { get; set; }
+    }
+
+    //    export interface SyncResult {
+    //    dddEventListVersion: number;
+    //    dddEvents: DDDEvent[];
+    //    dddEventDetails: DDDEventDetail[];
+    //    dddEventScores: DDDEventScoreInfo[];
+    //    acceptedSessionComments: AcceptedUserComment[];
+    //    acceptedEventComments: AcceptedUserComment[];
+    //    acceptedEventMostLikeComments: AcceptedUserComment[];
+    //    acceptedEventLeastLikeComments: AcceptedUserComment[];
+    //    acceptedPocketDDDComments: AcceptedUserComment[];
+    //}
 
     //incoming
     public class ClientSyncData
     {
-        public int eventId { get; set; }
         public string userToken { get; set; }
         public string clientToken { get; set; }
         public int dddEventListVersion { get; set; }
-        public int dddEventDataVersion { get; set; }
+        public IList<DDDEventDataInfo> dddEventDataInfo { get; set; }
         public IList<UserComment> sessionComments { get; set; }
         public IList<UserSessionData> userSessionData { get; set; }
-        public UserEventData userEventData { get; set; }
+        public IList<UserEventData> userEventData { get; set; }
 
         public IList<UserComment> eventMostLikeComments { get; set; }
         public IList<UserComment> eventLeastLikeComments { get; set; }
@@ -82,8 +118,15 @@ namespace PocketDDD.Models
 
     }
 
+    public class DDDEventDataInfo {
+        public int eventId { get; set; }
+        public int dataVersion { get; set; }
+        public string userToken { get; set; }
+    }
+
     public class UserComment
     {
+        public int eventId { get; set; }
         public int? sessionId { get; set; }
         public string id { get; set; }
         public DateTime date { get; set; }
@@ -91,6 +134,7 @@ namespace PocketDDD.Models
     }
 
     public class UserSessionData{
+        public int eventId { get; set; }
         public int sessionId { get; set; }
         public bool bookmarked { get; set; }
         public int attendingStatus { get; set; }
@@ -100,6 +144,7 @@ namespace PocketDDD.Models
 
     public class UserEventData
     {
+        public int eventId { get; set; }
         public int? refreshments { get; set; }
         public int? venue { get; set; }
         public int? overall { get; set; }

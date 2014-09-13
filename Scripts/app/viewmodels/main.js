@@ -31,10 +31,13 @@
                     var currentEventId = localDal.getCurrentEventId();
                     if (currentEventId) {
                         var event = _.find(PocketDDD.appState.events, { id: currentEventId });
-                        PocketDDD.appState.currentEventId = event.id;
-                        PocketDDD.appState.currentEventName = event.name;
-                        this.nav.showEventTitle(event.name);
-                        this.nav.navigateTo(2 /* eventHome */, event, false);
+                        if (event) {
+                            PocketDDD.appState.currentEventId = event.id;
+                            PocketDDD.appState.currentEventName = event.name;
+                            this.nav.showEventTitle(event.name);
+                            this.nav.navigateTo(2 /* eventHome */, event, false);
+                        } else
+                            this.nav.navigateTo(1 /* eventList */, null, false);
                     } else
                         this.nav.navigateTo(1 /* eventList */, null, false);
                 } else

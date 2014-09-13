@@ -14,102 +14,93 @@
         }
        
         syncData() {
-            //var eventsToSync = appState.events.filter(x=> x.isActive);
-
-            ////should really wait for one to finish before doing the next
-            //eventsToSync.forEach(event=> {
-            //    this.syncEvent(event);
-            //});
-
-            //hack
-            var event = appState.events[0];
-            return this.syncEvent(event);
+            return this.syncActiveEvents();
         }
 
-        private syncEvent(dddEvent: DDDEvent) {
+        private syncActiveEvents() {
             var server = new Services.ServerData();
+            var dddEvents = this.eventMgr.getEventsForSyncAndBuildVMData();
 
-            var data: DTOs.SyncData;
+            var sessionComments: DTOs.SyncUserComment[] = [];
+            var eventMostLikeComments: DTOs.SyncUserComment[] = [];
+            var eventLeastLikeComments: DTOs.SyncUserComment[] = [];
+            var pocketDDDComments: DTOs.SyncUserComment[] = [];
+            var eventComments: DTOs.SyncUserComment[] = [];
+            var dddEventDataInfo: DTOs.DDDEventDataInfo[] = [];
+            var sessionData: DTOs.SyncSessionUserData[] = [];
+            var userEventData: DTOs.SyncEventUserData[] = [];
 
-            if (dddEvent) {
-                var eventVM = this.eventMgr.getEventData(dddEvent);
-
-                var sessionComments: DTOs.SyncUserComment[] = [];
-                eventVM.userData.sessionData
+            dddEvents.forEach(dddEvent => {
+                dddEvent.vmData.userData.sessionData
                     .forEach(s=> s.privateComments
                         .filter(c=> !c.isSynched)
                         .forEach(c=> sessionComments.push({
-                            id: c.id, sessionId: s.sessionId, comment: c.comment, date: c.date
+                            eventId: dddEvent.id, id: c.id, sessionId: s.sessionId, comment: c.comment, date: c.date
                         })));
 
-                var eventMostLikeComments = eventVM.userData.eventFeedback.mostLike
+                dddEvent.vmData.userData.eventFeedback.mostLike
                     .filter(c=> !c.isSynched)
-                    .map<DTOs.SyncUserComment>(c => <any>{
-                        id: c.id, sessionId: null, comment: c.comment, date: c.date
-                    })
-                var eventLeastLikeComments = eventVM.userData.eventFeedback.leastLike
-                    .filter(c=> !c.isSynched)
-                    .map<DTOs.SyncUserComment>(c => <any>{
-                        id: c.id, sessionId: null, comment: c.comment, date: c.date
-                    })
-                var pocketDDDComments = eventVM.userData.eventFeedback.pocketDDD
-                    .filter(c=> !c.isSynched)
-                    .map<DTOs.SyncUserComment>(c => <any>{
-                        id: c.id, sessionId: null, comment: c.comment, date: c.date
-                    })
-                var eventComments = eventVM.userData.eventFeedback.comments
-                    .filter(c=> !c.isSynched)
-                    .map<DTOs.SyncUserComment>(c => <any>{
-                        id: c.id, sessionId: null, comment: c.comment, date: c.date
-                    })
+                    .forEach(c => eventMostLikeComments.push({
+                        eventId: dddEvent.id, id: c.id, sessionId: null, comment: c.comment, date: c.date
+                    }));
 
-                var sessionData = eventVM.userData.sessionData.map(x=> <DTOs.SyncSessionUserData>{
+                dddEvent.vmData.userData.eventFeedback.leastLike
+                    .filter(c=> !c.isSynched)
+                    .forEach(c => eventLeastLikeComments.push({
+                        eventId: dddEvent.id, id: c.id, sessionId: null, comment: c.comment, date: c.date
+                    }));
+
+                dddEvent.vmData.userData.eventFeedback.pocketDDD
+                    .filter(c=> !c.isSynched)
+                    .forEach(c=> pocketDDDComments.push({
+                        eventId: dddEvent.id, id: c.id, sessionId: null, comment: c.comment, date: c.date
+                    }));
+
+                dddEvent.vmData.userData.eventFeedback.comments
+                    .filter(c=> !c.isSynched)
+                    .forEach(c => eventComments.push({
+                        eventId: dddEvent.id, id: c.id, sessionId: null, comment: c.comment, date: c.date
+                    }));
+
+                dddEventDataInfo.push({
+                    eventId: dddEvent.id,
+                    dataVersion: dddEvent.vmData.dddEventDetail ? dddEvent.vmData.dddEventDetail.version : 0,
+                    userToken: dddEvent.vmData.userData.userRegistration ? dddEvent.vmData.userData.userRegistration.token : null
+                });
+
+                dddEvent.vmData.userData.sessionData.forEach(x=> sessionData.push({
+                    eventId: dddEvent.id,
                     sessionId: x.sessionId,
                     attendingStatus: x.attendingStatus,
                     bookmarked: x.bookmarked,
                     speakerKnowledgeRating: x.speakerKnowledgeRating,
                     speakerSkillsRating: x.speakerSkillsRating
-                });
+                }));
 
-                var userEventData: DTOs.SyncEventUserData = {
-                    venue: eventVM.userData.eventFeedback.venue,
-                    refreshments: eventVM.userData.eventFeedback.refreshments,
-                    overall: eventVM.userData.eventFeedback.overall,
-                    easterEggP: eventVM.userData.eventFeedback.easterEggP,
-                    easterEggRR: eventVM.userData.eventFeedback.easterEggRR
-                };
-
-                var userToken = eventVM.userData.userRegistration ? eventVM.userData.userRegistration.token : null;
-                data= {
+                userEventData.push({
                     eventId: dddEvent.id,
-                    userToken: userToken,
-                    clientToken: this.localData.getClientToken(),
-                    dddEventListVersion: this.localData.getDDDEventListVersion(),
-                    dddEventDataVersion: dddEvent.version,
-                    sessionComments: sessionComments,
-                    eventLeastLikeComments: eventLeastLikeComments,
-                    eventMostLikeComments: eventMostLikeComments,
-                    eventComments: eventComments,
-                    pocketDDDComments: pocketDDDComments,
-                    userSessionData: sessionData,
-                    userEventData: userEventData
-                }; 
-            } else {
-                data = {
-                    dddEventListVersion: 0,
-                    dddEventDataVersion: 0,
-                    eventId: -1,
-                    clientToken: this.localData.getClientToken(),
-                    userToken: null,
-                    sessionComments: [],
-                    eventLeastLikeComments: [],
-                    eventMostLikeComments: [],
-                    eventComments: [],
-                    pocketDDDComments: [],
-                    userSessionData: [],
-                    userEventData: null
-                }
-            }
+                    venue: dddEvent.vmData.userData.eventFeedback.venue,
+                    refreshments: dddEvent.vmData.userData.eventFeedback.refreshments,
+                    overall: dddEvent.vmData.userData.eventFeedback.overall,
+                    easterEggP: dddEvent.vmData.userData.eventFeedback.easterEggP,
+                    easterEggRR: dddEvent.vmData.userData.eventFeedback.easterEggRR
+                });
+            });
+
+            var eventListVersion = (dddEvents && dddEvents.length > 0) ? this.localData.getDDDEventListVersion() : 0;
+
+            var data: DTOs.SyncData = {
+                clientToken: this.localData.getClientToken(),
+                dddEventListVersion: eventListVersion,
+                dddEventDataInfo: dddEventDataInfo,
+                sessionComments: sessionComments,
+                eventLeastLikeComments: eventLeastLikeComments,
+                eventMostLikeComments: eventMostLikeComments,
+                eventComments: eventComments,
+                pocketDDDComments: pocketDDDComments,
+                userSessionData: sessionData,
+                userEventData: userEventData
+            }; 
             
             return server.sync(data)
                 .then((data: DTOs.SyncResult) => {
@@ -121,28 +112,26 @@
                             this.refreshEvents(data.dddEvents);
                         }
 
-                        if (data.dddEventDetail)
-                            this.refreshEventDetail(data.dddEventDetail);
+                        if (data.dddEventDetails) 
+                            data.dddEventDetails.forEach(eventDetail => this.refreshEventDetail(eventDetail));
 
-                        if (data.dddEventId === -1)
-                            return;
+                        if (data.acceptedSessionComments) 
+                            this.markUserSessionCommentsAsSynched(data.acceptedSessionComments);
 
-                        if (data.acceptedSessionComments && data.acceptedSessionComments.length > 0) 
-                            this.markUserSessionCommentsAsSynched(data.dddEventId, data.acceptedSessionComments);
+                        if (data.acceptedEventMostLikeComments)
+                            this.markUserEventMostLikeCommentsAsSynched(data.acceptedEventMostLikeComments);
 
-                        if (data.acceptedEventMostLikeComments && data.acceptedEventMostLikeComments.length > 0)
-                            this.markUserEventMostLikeCommentsAsSynched(data.dddEventId, data.acceptedEventMostLikeComments);
+                        if (data.acceptedEventLeastLikeComments)
+                            this.markUserEventLeastLikeCommentsAsSynched(data.acceptedEventLeastLikeComments);
 
-                        if (data.acceptedEventLeastLikeComments && data.acceptedEventLeastLikeComments.length > 0)
-                            this.markUserEventLeastLikeCommentsAsSynched(data.dddEventId, data.acceptedEventLeastLikeComments);
+                        if (data.acceptedEventComments)
+                            this.markUserEventCommentsAsSynched(data.acceptedEventComments);
 
-                        if (data.acceptedEventComments && data.acceptedEventComments.length > 0)
-                            this.markUserEventCommentsAsSynched(data.dddEventId, data.acceptedEventComments);
+                        if (data.acceptedPocketDDDComments)
+                            this.markUserPocketDDDCommentsAsSynched(data.acceptedPocketDDDComments);
 
-                        if (data.acceptedPocketDDDComments && data.acceptedPocketDDDComments.length > 0)
-                            this.markUserPocketDDDCommentsAsSynched(data.dddEventId, data.acceptedPocketDDDComments);
-
-                        this.updateGameScore(data.dddEventId, data.dddEventScore ? +data.dddEventScore : 0);
+                        if (data.dddEventScores)
+                            this.updateGameScore(data.dddEventScores);
                     }
 
                     return data;
@@ -164,71 +153,81 @@
             eventDataVM.refreshEventDetail(eventDetail);
         }
 
-        private markUserSessionCommentsAsSynched(dddEventId: number, userComments: DTOs.AcceptedUserComment[]) {
-            var event: DDDEvent = <any> _.find(appState.events, <any>{ id: dddEventId });
-            var eventDataVM = this.eventMgr.getEventData(event);
-            eventDataVM.suppressServerChanges = true;
-            userComments.forEach(x=> {
-                
-                var session: Session = <any>_.find(eventDataVM.sessions, <any>{ id: x.sessionId });
+        private markUserSessionCommentsAsSynched(userComments: DTOs.AcceptedUserComment[]) {
+            //could be optimised to group by eventId
+            userComments.forEach(syncComment=> {
+                var event: DDDEvent = <any> _.find(appState.events, <any>{ id: syncComment.eventId });
+                var eventDataVM = this.eventMgr.getEventData(event);
+                eventDataVM.suppressServerChanges = true;
+
+                var session: Session = <any>_.find(eventDataVM.sessions, <any>{ id: syncComment.sessionId });
                 var sessionVM = eventDataVM.getSessionVM(session)
-                var comment: UserComment = <any> _.find(sessionVM.userSessionData.privateComments, { id: x.id });
+                var comment: UserComment = <any> _.find(sessionVM.userSessionData.privateComments, { id: syncComment.id });
                 comment.isSynched = true;
+
+                eventDataVM.suppressServerChanges = false;
             });
-            eventDataVM.suppressServerChanges = false;
         }
 
-        private markUserEventCommentsAsSynched(dddEventId: number, userComments: DTOs.AcceptedUserComment[]) {
-            var event: DDDEvent = <any> _.find(appState.events, <any>{ id: dddEventId });
-            var eventDataVM = this.eventMgr.getEventData(event);
-            eventDataVM.suppressServerChanges = true;
+        private markUserEventCommentsAsSynched(userComments: DTOs.AcceptedUserComment[]) {
             userComments.forEach(x=> {
+                var event: DDDEvent = <any> _.find(appState.events, <any>{ id: x.eventId });
+                var eventDataVM = this.eventMgr.getEventData(event);
+                eventDataVM.suppressServerChanges = true;
+
                 var comment: UserComment = <any> _.find(eventDataVM.userData.eventFeedback.comments, { id: x.id });
                 comment.isSynched = true;
+                eventDataVM.suppressServerChanges = false;
             });
-            eventDataVM.suppressServerChanges = false;
+            
         }
-        private markUserEventLeastLikeCommentsAsSynched(dddEventId: number, userComments: DTOs.AcceptedUserComment[]) {
-            var event: DDDEvent = <any> _.find(appState.events, <any>{ id: dddEventId });
-            var eventDataVM = this.eventMgr.getEventData(event);
-            eventDataVM.suppressServerChanges = true;
+        private markUserEventLeastLikeCommentsAsSynched(userComments: DTOs.AcceptedUserComment[]) {
             userComments.forEach(x=> {
+                var event: DDDEvent = <any> _.find(appState.events, <any>{ id: x.eventId });
+                var eventDataVM = this.eventMgr.getEventData(event);
+                eventDataVM.suppressServerChanges = true;
+
                 var comment: UserComment = <any> _.find(eventDataVM.userData.eventFeedback.leastLike, { id: x.id });
                 comment.isSynched = true;
+                eventDataVM.suppressServerChanges = false;
             });
-            eventDataVM.suppressServerChanges = false;
         }
-        private markUserEventMostLikeCommentsAsSynched(dddEventId: number, userComments: DTOs.AcceptedUserComment[]) {
-            var event: DDDEvent = <any> _.find(appState.events, <any>{ id: dddEventId });
-            var eventDataVM = this.eventMgr.getEventData(event);
-            eventDataVM.suppressServerChanges = true;
+        private markUserEventMostLikeCommentsAsSynched(userComments: DTOs.AcceptedUserComment[]) {
             userComments.forEach(x=> {
+                var event: DDDEvent = <any> _.find(appState.events, <any>{ id: x.eventId });
+                var eventDataVM = this.eventMgr.getEventData(event);
+                eventDataVM.suppressServerChanges = true;
+
                 var comment: UserComment = <any> _.find(eventDataVM.userData.eventFeedback.mostLike, { id: x.id });
                 comment.isSynched = true;
+                eventDataVM.suppressServerChanges = false;
             });
-            eventDataVM.suppressServerChanges = false;
         }
-        private markUserPocketDDDCommentsAsSynched(dddEventId: number, userComments: DTOs.AcceptedUserComment[]) {
-            var event: DDDEvent = <any> _.find(appState.events, <any>{ id: dddEventId });
-            var eventDataVM = this.eventMgr.getEventData(event);
-            eventDataVM.suppressServerChanges = true;
+        private markUserPocketDDDCommentsAsSynched(userComments: DTOs.AcceptedUserComment[]) {
             userComments.forEach(x=> {
+                var event: DDDEvent = <any> _.find(appState.events, <any>{ id: x.eventId });
+                var eventDataVM = this.eventMgr.getEventData(event);
+                eventDataVM.suppressServerChanges = true;
+
                 var comment: UserComment = <any> _.find(eventDataVM.userData.eventFeedback.pocketDDD, { id: x.id });
                 comment.isSynched = true;
+                eventDataVM.suppressServerChanges = false;
             });
-            eventDataVM.suppressServerChanges = false;
         }
-        private updateGameScore(dddEventId: number, score: number) {
-            var event: DDDEvent = <any> _.find(appState.events, <any>{ id: dddEventId });
-            var eventDataVM = this.eventMgr.getEventData(event);
-            eventDataVM.suppressServerChanges = true;
+        private updateGameScore(eventScores: DTOs.DDDEventScoreInfo[]) {
+            eventScores.forEach(x=> {
+                var event: DDDEvent = <any> _.find(appState.events, <any>{ id: x.eventId });
+                var eventDataVM = this.eventMgr.getEventData(event);
+                eventDataVM.suppressServerChanges = true;
 
-            var currentScore = eventDataVM.userData.eventScore;
-            eventDataVM.userData.eventScore = score;
-            if (score > currentScore)
-                appState.setNewGameScore(score - currentScore);
+                var currentScore = eventDataVM.userData.eventScore;
+                var newScore = +x.score;
+                eventDataVM.userData.eventScore = newScore;
+                if (newScore > currentScore)
+                    appState.setNewGameScore(newScore - currentScore);
 
-            eventDataVM.suppressServerChanges = false;
+                eventDataVM.suppressServerChanges = false;
+            });
         }
     }
 } 

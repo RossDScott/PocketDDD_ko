@@ -39,13 +39,16 @@
                 var currentEventId = localDal.getCurrentEventId();
                 if (currentEventId) {
                     var event = _.find<DDDEvent>(appState.events, <any> { id: currentEventId });
-                    appState.currentEventId = event.id;
-                    appState.currentEventName = event.name;
-                    this.nav.showEventTitle(event.name);
-                    this.nav.navigateTo(PageType.eventHome, event, false);
+                    if (event) {
+                        appState.currentEventId = event.id;
+                        appState.currentEventName = event.name;
+                        this.nav.showEventTitle(event.name);
+                        this.nav.navigateTo(PageType.eventHome, event, false);
+                    } else
+                        this.nav.navigateTo(PageType.eventList, null, false);
+
                 } else 
                     this.nav.navigateTo(PageType.eventList, null, false);
-
             }
                 
             else

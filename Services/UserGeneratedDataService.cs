@@ -10,6 +10,13 @@ using System.Web;
 
 namespace PocketDDD.Services
 {
+    class UserEventInfo
+    {
+        public int EventId { get; set; }
+        public string UserName { get; set; }
+        public string UserToken { get; set; }
+    }
+
     public class UserGeneratedDataService
     {
         CloudTableClient tableClient;
@@ -17,28 +24,82 @@ namespace PocketDDD.Services
         CloudTable userSessionDataTable;
         CloudTable userEventDataTable;
 
-        EventScoreService eventScoreService;
-        HardCodedDataService dataService;
+        private readonly UserService userService;
+        private readonly EventsService eventsService;
 
-        DDDEventDetail eventDetail;
-        public UserGeneratedDataService(EventScoreService eventScoreService)
+        private readonly IList<DDDEventDataInfo> dddEventDataInfo;
+        private Dictionary<int, UserEventInfo> userInfo = new Dictionary<int, UserEventInfo>();
+
+        public UserGeneratedDataService(EventsService eventsService, UserService userService, IList<DDDEventDataInfo> dddEventDataInfo)
         {
-            this.eventScoreService = eventScoreService;
-            this.dataService = new HardCodedDataService();
+            this.userService = userService;
+            this.eventsService = eventsService;
+            this.dddEventDataInfo = dddEventDataInfo;
+
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(ConfigurationManager.ConnectionStrings["pocketDDDCloudStorage"].ConnectionString);
             this.tableClient = storageAccount.CreateCloudTableClient();
             this.userCommentsTable = tableClient.GetTableReference("Comments");
             this.userSessionDataTable = tableClient.GetTableReference("UserSessionData");
             this.userEventDataTable = tableClient.GetTableReference("UserEventData");
-            this.eventDetail = this.dataService.GetEventDetail(0);
         }
 
+        private UserEventInfo GetUserEventInfo(int eventId)
+        {
+            if(!userInfo.ContainsKey(eventId))
+            {
+                var eventData = dddEventDataInfo.SingleOrDefault(x=>x.eventId == eventId);
+                if (eventData == null)
+                    return null;
 
-        public IList<AcceptedUserComment> AddComments(string type, int dddEventId, string userName, string userToken, string clientToken, IList<UserComment> userComments)
+                var userName = eventData.userToken != null ? userService.GetUserName(eventId, eventData.userToken) : null;
+
+                userInfo.Add(eventId, new UserEventInfo { EventId = eventId, UserName = userName, UserToken = eventData.userToken });
+            }
+
+            return userInfo[eventId];
+        }
+
+        public IList<AcceptedUserComment> AddComments(string type, string clientToken, IList<UserComment> userComments)
         {
             if (userComments == null || userComments.Count == 0)
                 return null;
 
+            var acceptedComments = new List<AcceptedUserComment>();
+            var commentsForEvents = userComments.GroupBy(x=>x.eventId);
+            foreach (var eventGroup in commentsForEvents)
+	        {
+                var userInfo = GetUserEventInfo(eventGroup.Key);
+                var dddEvent = eventsService.GetServerEventData(eventGroup.Key);
+                var eventDetail = eventsService.GetEventDetail(dddEvent);
+
+                if (dddEvent.IsActive)
+                {
+                    var accepted = addComments(type, eventGroup.Key, eventDetail, userInfo != null ? userInfo.UserName : "", userInfo != null ? userInfo.UserToken : null, clientToken, eventGroup.ToList());
+                    acceptedComments.AddRange(accepted);
+                }
+                else
+                {
+                    //We don't want the client to keep sending the same message, so respond that it is accepted (even though it's not)
+                    var accepted = eventGroup.Select(x => new AcceptedUserComment
+                    {
+                        eventId = x.eventId,
+                        id = x.id,
+                        sessionId = x.sessionId
+                    });
+
+                    return accepted.ToList();
+                }
+	        }
+
+            return acceptedComments;
+        }
+
+        private IList<AcceptedUserComment> addComments(string type, int dddEventId, DDDEventDetail eventDetail, string userName, string userToken, string clientToken, IList<UserComment> userComments)
+        {
+            if (userComments == null || userComments.Count == 0)
+                return null;
+
+            var eventScoreService = LazyLoadEventScoreService(userToken, userName, dddEventId);
             var token = userToken ?? clientToken;
             var comments = userComments.Select(x => new Comment
             {
@@ -51,44 +112,61 @@ namespace PocketDDD.Services
                 ClientToken = clientToken,
                 UserComment = x.comment,
                 Date = x.date
-
             });
 
             foreach (var comment in userComments)
             {
-                if(comment.sessionId != null)
+                if (comment.sessionId != null)
                 {
                     var session = eventDetail.Sessions.First(x => x.Id == comment.sessionId);
                     eventScoreService.AddCommentItem(type, session.TimeSlotId);
-                } 
+                }
                 else
                 {
                     eventScoreService.AddCommentItem(type, null);
                 }
-
             }
 
             TableBatchOperation batch = new TableBatchOperation();
             foreach (var comment in comments)
             {
-                batch.InsertOrReplace(comment);   
+                batch.InsertOrReplace(comment);
             }
             userCommentsTable.ExecuteBatch(batch);
 
             var accepted = userComments.Select(x => new AcceptedUserComment
             {
-                Id = x.id,
-                SessionId = x.sessionId
+                eventId = dddEventId,
+                id = x.id,
+                sessionId = x.sessionId
             });
 
             return accepted.ToList();
         }
 
-        public void AddOrUpdateSessionData(int dddEventId, string userName, string userToken, string clientToken, IList<PocketDDD.Models.UserSessionData> sessionData)
+        public void AddOrUpdateSessionData(string clientToken, IList<PocketDDD.Models.UserSessionData> sessionData)
+        {
+            if (sessionData == null || sessionData.Count == 0)
+                return;
+
+            var sessionDataForEvents = sessionData.GroupBy(x => x.eventId);
+            foreach (var eventGroup in sessionDataForEvents)
+            {
+                var userInfo = GetUserEventInfo(eventGroup.Key);
+                var dddEvent = eventsService.GetServerEventData(eventGroup.Key);
+                var eventDetail = eventsService.GetEventDetail(dddEvent);
+
+                if(dddEvent.IsActive)
+                    addOrUpdateSessionData(eventGroup.Key, eventDetail, userInfo != null ? userInfo.UserName : "", userInfo != null ? userInfo.UserToken : null, clientToken, eventGroup.ToList());
+            }
+        }
+
+        private void addOrUpdateSessionData(int dddEventId, DDDEventDetail eventDetail, string userName, string userToken, string clientToken, IList<PocketDDD.Models.UserSessionData> sessionData)
         {
             if (sessionData == null || sessionData.Count() == 0)
                 return;
 
+            var eventScoreService = LazyLoadEventScoreService(userToken, userName, dddEventId);
             var token = userToken ?? clientToken;
 
             var userSessionDatas = sessionData.Select(x => new PocketDDD.Models.Azure.UserSessionData
@@ -127,8 +205,24 @@ namespace PocketDDD.Services
             userSessionDataTable.ExecuteBatch(batch);
         }
 
-        public void AddOrUpdateEventData(int dddEventId, string userName, string userToken, string clientToken, PocketDDD.Models.UserEventData eventData)
+        public void AddOrUpdateEventData(string clientToken, IList<PocketDDD.Models.UserEventData> eventData)
         {
+            if (eventData == null || eventData.Count == 0)
+                return;
+
+            foreach (var eventDataItem in eventData)
+            {
+                var userInfo = GetUserEventInfo(eventDataItem.eventId);
+                var dddEvent = eventsService.GetServerEventData(eventDataItem.eventId);
+
+                if(dddEvent.IsActive)
+                    addOrUpdateEventData(eventDataItem.eventId, userInfo != null ? userInfo.UserName : "", userInfo != null ? userInfo.UserToken : null, clientToken, eventDataItem);
+            }
+        }
+
+        private void addOrUpdateEventData(int dddEventId, string userName, string userToken, string clientToken, PocketDDD.Models.UserEventData eventData)
+        {
+            var eventScoreService = LazyLoadEventScoreService(userToken, userName, dddEventId);
             var token = userToken ?? clientToken;
 
             var userSessionDatas = new PocketDDD.Models.Azure.UserEventData
@@ -162,6 +256,29 @@ namespace PocketDDD.Services
 
             TableOperation insert = TableOperation.InsertOrReplace(userSessionDatas);
             userEventDataTable.Execute(insert);
+        }
+
+        private Dictionary<int, EventScoreService> eventScoreServices = new Dictionary<int, EventScoreService>();
+        public EventScoreService LazyLoadEventScoreService(string userToken, string userName, int eventId)
+        {
+            if (eventScoreServices.ContainsKey(eventId))
+                return eventScoreServices[eventId];
+
+            var eventScoreService = new EventScoreService(userToken, eventId, userName);
+            eventScoreServices.Add(eventId, eventScoreService);
+            return eventScoreService;
+        }
+
+        public IList<DDDEventScoreInfo> CommitEventScores()
+        {
+            var eventScoreInfo = new List<DDDEventScoreInfo>();
+            foreach (var eventScoreService in eventScoreServices)
+            {
+                var score = eventScoreService.Value.CommitChanges();
+                eventScoreInfo.Add(new DDDEventScoreInfo { eventId = eventScoreService.Key, score = score });
+            }
+
+            return eventScoreInfo;
         }
     }
 }

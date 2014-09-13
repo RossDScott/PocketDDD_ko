@@ -44,6 +44,12 @@ var PocketDDD;
                 ko.defineProperty(this, "isRegistered", function () {
                     return _this.currentEventData ? _this.currentEventData.isRegistered : false;
                 });
+                ko.defineProperty(this, "requiresEventFeedback", function () {
+                    return _this.currentEventData ? _this.currentEventData.dddEvent.requiresEventFeedback : false;
+                });
+                ko.defineProperty(this, "requiresEventbriteLogin", function () {
+                    return _this.currentEventData ? _this.currentEventData.dddEvent.requiresEventbriteLogin : false;
+                });
             }
             EventHomePage.prototype.show = function (dddEvent) {
                 if (dddEvent === undefined)
@@ -58,7 +64,11 @@ var PocketDDD;
             };
 
             EventHomePage.prototype.getListDateString = function (date) {
-                return date ? date.format("ddd Do MMM YY") : "no date";
+                if (!date)
+                    return "no date";
+
+                var m = moment(date);
+                return m.format("ddd Do MMM YYYY");
             };
             return EventHomePage;
         })(PocketDDD.VM.BasePage);

@@ -14,9 +14,14 @@ namespace PocketDDD.Services
 {
     public class EventbriteService
     {
-        public async Task<EventbriteUserInfo> GetUserRegistrationInfo(int eventbriteOrderNo)
+        private readonly string eventbriteToken;
+        public EventbriteService(string eventbriteToken)
         {
-            var eventbriteToken = ConfigurationManager.AppSettings["eventbriteToken"];
+            this.eventbriteToken = eventbriteToken;
+        }
+
+        public async Task<EventbriteUserInfo> GetUserRegistrationInfo(int eventbriteOrderNo, string eventbriteEventId)
+        {
             var req = new HttpRequestMessage(HttpMethod.Get, "https://www.eventbriteapi.com/v3/orders/" + eventbriteOrderNo.ToString() + "?token=" + eventbriteToken);
             req.Headers.Add("Cache-Control", "no-cache");
 
@@ -33,7 +38,10 @@ namespace PocketDDD.Services
             string lastName;
 
             try 
-	        {	        
+	        {
+                if (((string)data.event_id) != eventbriteEventId)
+                    throw new ApplicationException("Incorrect event_id");
+
 		        var firstAttendee = data.attendees[0];
                 var profile = firstAttendee.profile;
                 firstName = profile.first_name;

@@ -15,28 +15,28 @@ namespace PocketDDD.Services
         CloudTableClient tableClient;
         CloudTable userCommentsTable;
         CloudTable userSessionDataTable;
+        public SpeakerMapping speakerMapping;
 
-        Dictionary<string, int> speakerIdMapping = new Dictionary<string, int>();
-        public SpeakerService()
+        public SpeakerService(string speakerId)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(ConfigurationManager.ConnectionStrings["pocketDDDCloudStorage"].ConnectionString);
             this.tableClient = storageAccount.CreateCloudTableClient();
             this.userCommentsTable = tableClient.GetTableReference("Comments");
             this.userSessionDataTable = tableClient.GetTableReference("UserSessionData");
+            var speakerLookupService = new SpeakerLookupService();
+            this.speakerMapping = speakerLookupService.GetSpeakerMapping(speakerId);
 
-            //was hardcoded, need to move to db
-            speakerIdMapping.Add("GUID GOES HERE", 1);
+            if (this.speakerMapping == null)
+                throw new ApplicationException("Invalid speakerId");
         }
 
-        public IList<SpeakerViewUserSessionData> GetMyRatings(string id)
+        public IList<SpeakerViewUserSessionData> GetMyRatings()
         {
-            var sessionId = speakerIdMapping[id];
-
             TableQuery<PocketDDD.Models.Azure.UserSessionData> rangeQuery = new TableQuery<PocketDDD.Models.Azure.UserSessionData>().Where(
                 TableQuery.CombineFilters(
-                    TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, "1"),
+                    TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, speakerMapping.EventId.ToString()),
                     TableOperators.And,
-                    TableQuery.GenerateFilterConditionForInt("SessionId", QueryComparisons.Equal, sessionId)));
+                    TableQuery.GenerateFilterConditionForInt("SessionId", QueryComparisons.Equal, speakerMapping.SessionId)));
 
             var data = userSessionDataTable.ExecuteQuery(rangeQuery).Select(x => new SpeakerViewUserSessionData
             {
@@ -49,15 +49,13 @@ namespace PocketDDD.Services
             return data;
         }
 
-        public IList<SpeakerViewUserComment> GetMyComments(string id)
+        public IList<SpeakerViewUserComment> GetMyComments()
         {
-            var sessionId = speakerIdMapping[id];
-
             TableQuery<PocketDDD.Models.Azure.Comment> rangeQuery = new TableQuery<PocketDDD.Models.Azure.Comment>().Where(
                 TableQuery.CombineFilters(
-                    TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, "1"),
+                    TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, speakerMapping.EventId.ToString()),
                     TableOperators.And,
-                    TableQuery.GenerateFilterConditionForInt("SessionId", QueryComparisons.Equal, sessionId)));
+                    TableQuery.GenerateFilterConditionForInt("SessionId", QueryComparisons.Equal, speakerMapping.SessionId)));
 
             var data = userCommentsTable.ExecuteQuery(rangeQuery).Select(x => new SpeakerViewUserComment
             {
